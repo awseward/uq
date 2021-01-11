@@ -2,6 +2,7 @@ import argparse
 import system
 
 import ./uqpkg/statics
+import ./uqpkg/db_legacy_shell
 
 const AppName = "uq"
 
@@ -12,11 +13,10 @@ let p = newParser(AppName):
   flag "--revision", help = "Print the Git SHA of " & AppName
   flag "--info", help = "Print version and revision"
 
-  command "hello":
-    arg "name", help = "Name to say hello to"
-
+  command "db-legacy-shell":
+    help "\"Explodes\" the url to DATABASE_{HOST,PORT,LOGIN,PASSWORD,NAME} for eval by shell"
     run:
-      echo "Hello, ", opts.name, "!"
+      echo db_legacy_shell.fmt()
 
   run:
     if opts.version:
