@@ -2,9 +2,16 @@
 
 set -euo pipefail
 
-readonly tag_name="$1"
 readonly binary_name='uq'
-readonly tarball_name="${binary_name}-${tag_name}.tar.gz"
+
+readonly tag_name="$1"
+readonly platform_name="${2:-}"
+
+if [ "${platform_name}" != '' ]; then
+  readonly tarball_name="${binary_name}-${tag_name}-${platform_name}.tar.gz"
+else
+  readonly tarball_name="${binary_name}-${tag_name}.tar.gz"
+fi
 
 echo "${binary_name}" \
   | xargs -t >&2 nimble build --accept --define:release --stacktrace:on \
