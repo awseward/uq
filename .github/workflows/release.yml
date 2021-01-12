@@ -48,7 +48,7 @@ jobs:
 
           set -euo pipefail
 
-          TARBALL_FILENAME="$(./_build_release_tarball.sh "${GIT_TAG}" "${PLATFORM_NAME}")"
+          TARBALL_FILENAME="$(./_build_release_tarball.sh "${GIT_TAG}" "${PLATFORM_NAME,,}")"
           ls -lah
           export TARBALL_FILENAME
           export TARBALL_FILEPATH="./${TARBALL_FILENAME}"
@@ -67,7 +67,8 @@ jobs:
           export TARBALL_CHECKSUM
           echo "TARBALL_CHECKSUM=${TARBALL_CHECKSUM}" >> "GITHUB_ENV"
           echo "::set-output name=tarball_checksum::${TARBALL_CHECKSUM}"
-      - env:
+      - continue-on-error: true
+        env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         id: create_release
         uses: "actions/create-release@v1"
