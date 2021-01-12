@@ -17,7 +17,7 @@ in  GHA.Workflow::{
     , on = On.map [ On.push On.PushPull::{ tags = On.include [ "*" ] } ]
     , jobs = toMap
         { release-client = GHA.Job::{
-          , runs-on = [ "macos-latest" ]
+          , runs-on = [ "macos-latest", "ubuntu-latest" ]
           , steps =
               Checkout.plainDo
                 [ nim/Setup.mkSteps nim/Setup.Opts::{ nimVersion = "1.4.2" }
