@@ -17,13 +17,8 @@ let p = newParser(AppName):
   flag "--revision", help = "Print the Git SHA of " & AppName
   flag "--info", help = "Print version and revision"
 
-  command "a":
-    arg "input", default = USE_STDIN
-    run:
-      if opts.input == USE_STDIN:
-        opts.input = (readAll stdin).strip()
-
   command "fmt-shell":
+    help "Formats a string which can be used with `eval` to set the requisite parts of a URL as env vars"
     # FIXME -- The default here is quite subpar, but the preferable `required`
     # keyword arg to `option` not introduced until a later version of argparse.
     option "--path-key", default = "URL_PATH"
@@ -44,7 +39,7 @@ let p = newParser(AppName):
       )
 
   command "heroku-shmig":
-    help "\"Explodes\" the url to DATABASE_{HOST,PORT,LOGIN,PASSWORD,NAME} for eval by shell"
+    help "Like `fmt-shell`, but specifically for using the heroku-postgres config var DATABASE_URL with shmig (https://github.com/mbucc/shmig)"
     run:
       echo heroku_shmig.fmt()
 
