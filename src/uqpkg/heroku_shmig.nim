@@ -1,7 +1,10 @@
 import os
+import options
 import streams
 import strutils
 import uri
+
+import ./lib
 
 static:
   const scheme = "postgres"
@@ -27,20 +30,11 @@ static:
   assert parsed.path.strip(chars = {'/'}) == dbName
 
 proc fmt*(): string =
-  let databaseUrl = getEnv "DATABASE_URL"
-  let parsed = parseUri databaseUrl
-  result = """
-export DATABASE_HOST='$1'
-export DATABASE_PORT='$2'
-export DATABASE_LOGIN='$3'
-export DATABASE_PASSWORD='$4'
-export DATABASE_NAME='$5'""" % [
-    parsed.hostname,
-    parsed.port,
-    parsed.username,
-    parsed.password,
-    parsed.path.strip(chars = {'/'})
-  ]
+  getEnv("DATABASE_URL").fmt_shell(
+    "DATABASE",
+    pathLStripSlash = true,
+    pathKey = some("DATABASE_NAME")
+  )
 
 proc run*() =
   echo fmt()
