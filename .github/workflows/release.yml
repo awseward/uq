@@ -5,6 +5,34 @@
 # Please avoid editing it manually unless doing so temporarily.
 
 jobs:
+  setup-release:
+    runs-on: 'ubuntu-latest'
+    outputs:
+      git_tag: "${{ steps.plan.outputs.git_tag }}"
+      upload_url: "${{ steps.create_release.outputs.upload_url }}"
+      html_url: "${{ steps.create_release.outputs.html_url }}"
+    steps:
+      - id: plan
+        name: Plan release
+        run: |
+          #!/usr/bin/env bash
+
+          set -euo pipefail
+
+          export GIT_TAG="${GITHUB_REF/refs\/tags\//}"
+          echo "GIT_TAG=${GIT_TAG}" >> "$GITHUB_ENV"
+          echo "::set-output name=git_tag::${GIT_TAG}"
+
+      - env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        id: create_release
+        uses: "actions/create-release@v1"
+        with:
+          draft: 'false'
+          prerelease: 'false'
+          release_name: "${{ steps.plan.outputs.git_tag }}"
+          tag_name: "${{ steps.plan.outputs.git_tag }}"
+
   release-client:
     runs-on: "${{ matrix.os }}"
     strategy:
@@ -12,6 +40,7 @@ jobs:
         os:
           - 'macos-latest'
           - 'ubuntu-latest'
+    needs: 'setup-release'
     steps:
       - uses: "actions/checkout@v2"
       - id: cache-choosenim
@@ -29,17 +58,8 @@ jobs:
       - uses: "jiro4989/setup-nim-action@v1.2.3"
         with:
           nim-version: '1.4.2'
-      - id: plan
-        name: Plan release
-        run: |
-          #!/usr/bin/env bash
-
-          set -euo pipefail
-
-          export GIT_TAG="${GITHUB_REF/refs\/tags\//}"
-          echo "GIT_TAG=${GIT_TAG}" >> "$GITHUB_ENV"
-          echo "::set-output name=git_tag::${GIT_TAG}"
       - env:
+          GIT_TAG: "${{ needs.setup-release.outputs.git_tag }}"
           PLATFORM_NAME: "${{ runner.os }}"
         id: tarball
         name: Create tarball
@@ -67,17 +87,6 @@ jobs:
           export TARBALL_CHECKSUM
           echo "TARBALL_CHECKSUM=${TARBALL_CHECKSUM}" >> "GITHUB_ENV"
           echo "::set-output name=tarball_checksum::${TARBALL_CHECKSUM}"
-      - continue-on-error: true
-        env:
-          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-        id: create_release
-        uses: "actions/create-release@v1"
-        with:
-          body: "Checksum: `${{ steps.checksum.outputs.tarball_checksum }}`"
-          draft: 'false'
-          prerelease: 'false'
-          release_name: "${{ steps.plan.outputs.git_tag }}"
-          tag_name: "${{ steps.plan.outputs.git_tag }}"
       - env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         id: upload_tarball
@@ -86,7 +95,7 @@ jobs:
           asset_content_type: application/gzip
           asset_name: "${{ steps.tarball.outputs.tarball_filename }}"
           asset_path: "${{ steps.tarball.outputs.tarball_filepath }}"
-          upload_url: "${{ steps.create_release.outputs.upload_url }}"
+          upload_url: "${{ needs.setup-release.outputs.upload_url }}"
       - env:
           COMMITTER_TOKEN: "${{ secrets.COMMITTER_TOKEN }}"
         if: "${{ runner.os == 'macOS' }}"
@@ -96,7 +105,7 @@ jobs:
           commit-message: |
             {{formulaName}} {{version}}
 
-            Sourced from ${{ steps.create_release.outputs.html_url }}.
+            Sourced from ${{ needs.setup-release.outputs.html_url }}.
           download-url: "${{ steps.upload_tarball.outputs.browser_download_url }}"
           formula-name: uq
           homebrew-tap: awseward/homebrew-tap
