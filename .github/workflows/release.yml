@@ -7,7 +7,7 @@
 jobs:
   j0-setup:
     outputs:
-      git-tag: "${{ steps.plan.outputs.git_tag }}"
+      git_tag: "${{ steps.plan.outputs.git_tag }}"
       html_url: "${{ steps.create_release.outputs.html_url }}"
       upload_url: "${{ steps.create_release.outputs.upload_url }}"
     runs-on:
