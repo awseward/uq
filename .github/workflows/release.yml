@@ -18,11 +18,10 @@ jobs:
         name: Plan release
         run: |
           #!/usr/bin/env bash
-
+          
           set -euo pipefail
-
+          
           export GIT_TAG="${GITHUB_REF/refs\/tags\//}"
-
           echo "GITHUB_REF=${GITHUB_REF}"
           echo "GIT_TAG=${GIT_TAG}" | tee -a "$GITHUB_ENV"
           echo "::set-output name=git_tag::${GIT_TAG}"
@@ -65,9 +64,9 @@ jobs:
         name: Create tarball
         run: |
           #!/usr/bin/env bash
-
+          
           set -euo pipefail
-
+          
           TARBALL_FILENAME="$( ./_build_release_tarball.sh "${GIT_TAG}" "$( tr '[:upper:]' '[:lower:]' <<< "${PLATFORM_NAME}" )" )"
           ls -lah
           export TARBALL_FILENAME
@@ -80,9 +79,9 @@ jobs:
         name: Record checksum
         run: |
           #!/usr/bin/env bash
-
+          
           set -euo pipefail
-
+          
           TARBALL_CHECKSUM="$(shasum -a 256 "${TARBALL_FILENAME}" | cut -d ' ' -f1)"
           export TARBALL_CHECKSUM
           echo "TARBALL_CHECKSUM=${TARBALL_CHECKSUM}" | tee -a "GITHUB_ENV"
@@ -104,7 +103,7 @@ jobs:
           base-branch: master
           commit-message: |
             {{formulaName}} {{version}}
-
+            
             Sourced from ${{ needs.j0-setup.outputs.html_url }}.
           download-url: "${{ steps.upload_tarball.outputs.browser_download_url }}"
           formula-name: uq
