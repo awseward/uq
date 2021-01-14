@@ -5,42 +5,39 @@
 # Please avoid editing it manually unless doing so temporarily.
 
 jobs:
-  setup-release:
-    runs-on: 'ubuntu-latest'
+  j0-setup:
     outputs:
-      git_tag: "${{ steps.plan.outputs.git_tag }}"
-      upload_url: "${{ steps.create_release.outputs.upload_url }}"
+      git-tag: "${{ steps.plan.outputs.git_tag }}"
       html_url: "${{ steps.create_release.outputs.html_url }}"
+      upload_url: "${{ steps.create_release.outputs.upload_url }}"
+    runs-on:
+      - ubuntu-latest
     steps:
       - id: plan
         name: Plan release
         run: |
           #!/usr/bin/env bash
-
+          
           set -euo pipefail
-
+          
           export GIT_TAG="${GITHUB_REF/refs\/tags\//}"
           echo "GIT_TAG=${GIT_TAG}" >> "$GITHUB_ENV"
           echo "::set-output name=git_tag::${GIT_TAG}"
-
       - env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         id: create_release
         uses: "actions/create-release@v1"
         with:
+          body: ''
           draft: 'false'
           prerelease: 'false'
           release_name: "${{ steps.plan.outputs.git_tag }}"
           tag_name: "${{ steps.plan.outputs.git_tag }}"
-
-  release-client:
-    runs-on: "${{ matrix.os }}"
-    strategy:
-      matrix:
-        os:
-          - 'macos-latest'
-          - 'ubuntu-latest'
-    needs: 'setup-release'
+  j1-artifacts:
+    needs:
+      - j0-setup
+    runs-on:
+      - "${{ matrix.os }}"
     steps:
       - uses: "actions/checkout@v2"
       - id: cache-choosenim
@@ -65,9 +62,9 @@ jobs:
         name: Create tarball
         run: |
           #!/usr/bin/env bash
-
+          
           set -euo pipefail
-
+          
           TARBALL_FILENAME="$( ./_build_release_tarball.sh "${GIT_TAG}" "$( tr '[:upper:]' '[:lower:]' <<< "${PLATFORM_NAME}" )" )"
           ls -lah
           export TARBALL_FILENAME
@@ -80,9 +77,9 @@ jobs:
         name: Record checksum
         run: |
           #!/usr/bin/env bash
-
+          
           set -euo pipefail
-
+          
           TARBALL_CHECKSUM="$(shasum -a 256 "${TARBALL_FILENAME}" | cut -d ' ' -f1)"
           export TARBALL_CHECKSUM
           echo "TARBALL_CHECKSUM=${TARBALL_CHECKSUM}" >> "GITHUB_ENV"
@@ -95,7 +92,7 @@ jobs:
           asset_content_type: application/gzip
           asset_name: "${{ steps.tarball.outputs.tarball_filename }}"
           asset_path: "${{ steps.tarball.outputs.tarball_filepath }}"
-          upload_url: "${{ needs.setup-release.outputs.upload_url }}"
+          upload_url: "${{ needs.j0-setup.outputs.upload_url }}"
       - env:
           COMMITTER_TOKEN: "${{ secrets.COMMITTER_TOKEN }}"
         if: "${{ runner.os == 'macOS' }}"
@@ -104,11 +101,16 @@ jobs:
           base-branch: master
           commit-message: |
             {{formulaName}} {{version}}
-
+            
             Sourced from ${{ needs.setup-release.outputs.html_url }}.
           download-url: "${{ steps.upload_tarball.outputs.browser_download_url }}"
           formula-name: uq
           homebrew-tap: awseward/homebrew-tap
+    strategy:
+      matrix:
+        os:
+          - macos-latest
+          - ubuntu-latest
 name: Release
 on:
   push:
