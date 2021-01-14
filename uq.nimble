@@ -1,6 +1,6 @@
 # Package
 
-version       = "0.1.10"
+version       = "0.1.11"
 author        = "Andrew Seward"
 description   = "Like `jq` but for URLs"
 license       = "MIT"
