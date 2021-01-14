@@ -8,8 +8,8 @@ jobs:
   j0-setup:
     outputs:
       git_tag: "${{ steps.plan.outputs.git_tag }}"
-      html_url: "${{ steps.create_release.outputs.html_url }}"
-      upload_url: "${{ steps.create_release.outputs.upload_url }}"
+      html_url: "${{ steps.create-release.outputs.html_url }}"
+      upload_url: "${{ steps.create-release.outputs.upload_url }}"
     runs-on:
       - ubuntu-latest
     steps:
@@ -27,7 +27,7 @@ jobs:
           echo "::set-output name=git_tag::${GIT_TAG}"
       - env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-        id: create_release
+        id: create-release
         uses: "actions/create-release@v1"
         with:
           body: ''
@@ -88,7 +88,7 @@ jobs:
           echo "::set-output name=tarball_checksum::${TARBALL_CHECKSUM}"
       - env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-        id: upload_tarball
+        id: upload-tarball
         uses: "actions/upload-release-asset@v1"
         with:
           asset_content_type: application/gzip
@@ -105,7 +105,7 @@ jobs:
             {{formulaName}} {{version}}
             
             Sourced from ${{ needs.j0-setup.outputs.html_url }}.
-          download-url: "${{ steps.upload_tarball.outputs.browser_download_url }}"
+          download-url: "${{ steps.upload-tarball.outputs.browser_download_url }}"
           formula-name: uq
           homebrew-tap: awseward/homebrew-tap
     strategy:
