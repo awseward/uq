@@ -7,12 +7,13 @@
 jobs:
   j0-setup:
     outputs:
-      git-tag: "${{ steps.plan.outputs.git_tag }}"
+      git_tag: "${{ steps.plan.outputs.git_tag }}"
       html_url: "${{ steps.create_release.outputs.html_url }}"
       upload_url: "${{ steps.create_release.outputs.upload_url }}"
     runs-on:
       - ubuntu-latest
     steps:
+      - uses: "actions/checkout@v2"
       - id: plan
         name: Plan release
         run: |
@@ -21,7 +22,8 @@ jobs:
           set -euo pipefail
           
           export GIT_TAG="${GITHUB_REF/refs\/tags\//}"
-          echo "GIT_TAG=${GIT_TAG}" >> "$GITHUB_ENV"
+          echo "GITHUB_REF=${GITHUB_REF}"
+          echo "GIT_TAG=${GIT_TAG}" | tee -a "$GITHUB_ENV"
           echo "::set-output name=git_tag::${GIT_TAG}"
       - env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
@@ -69,8 +71,8 @@ jobs:
           ls -lah
           export TARBALL_FILENAME
           export TARBALL_FILEPATH="./${TARBALL_FILENAME}"
-          echo "TARBALL_FILENAME=${TARBALL_FILENAME}" >> "$GITHUB_ENV"
-          echo "TARBALL_FILEPATH=${TARBALL_FILEPATH}" >> "$GITHUB_ENV"
+          echo "TARBALL_FILENAME=${TARBALL_FILENAME}" | tee -a "$GITHUB_ENV"
+          echo "TARBALL_FILEPATH=${TARBALL_FILEPATH}" | tee -a "$GITHUB_ENV"
           echo "::set-output name=tarball_filename::${TARBALL_FILENAME}"
           echo "::set-output name=tarball_filepath::${TARBALL_FILEPATH}"
       - id: checksum
@@ -82,7 +84,7 @@ jobs:
           
           TARBALL_CHECKSUM="$(shasum -a 256 "${TARBALL_FILENAME}" | cut -d ' ' -f1)"
           export TARBALL_CHECKSUM
-          echo "TARBALL_CHECKSUM=${TARBALL_CHECKSUM}" >> "GITHUB_ENV"
+          echo "TARBALL_CHECKSUM=${TARBALL_CHECKSUM}" | tee -a "GITHUB_ENV"
           echo "::set-output name=tarball_checksum::${TARBALL_CHECKSUM}"
       - env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
