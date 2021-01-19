@@ -31,8 +31,8 @@ jobs:
         uses: "actions/create-release@v1"
         with:
           body: ''
-          draft: 'false'
-          prerelease: 'false'
+          draft: false
+          prerelease: false
           release_name: "${{ steps.plan.outputs.git_tag }}"
           tag_name: "${{ steps.plan.outputs.git_tag }}"
   j1-artifacts:
