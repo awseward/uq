@@ -8,9 +8,9 @@ let OS = GHA.OS.Type
 
 let actions = imports.actions-catalog
 
-let Checkout = imports.action_templates.actions/Checkout
+let Checkout = imports.job-templates.actions/Checkout
 
-let nim/Build = imports.action_templates.nim/Build
+let nim/Build = imports.job-templates.nim/Build
 
 in  GHA.Workflow::{
     , name = "CI"

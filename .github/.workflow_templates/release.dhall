@@ -4,9 +4,9 @@ let GHA = imports.GHA
 
 let On = GHA.On
 
-let action_templates = imports.action_templates
+let job-templates = imports.job-templates
 
-let Release = action_templates.release/jobs
+let Release = job-templates.release/jobs
 
 in  GHA.Workflow::{
     , name = "Release"
