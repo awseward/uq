@@ -100,7 +100,7 @@ jobs:
         if: "${{ runner.os == 'macOS' }}"
         uses: "mislav/bump-homebrew-formula-action@v1"
         with:
-          base-branch: master
+          base-branch: main
           commit-message: |
             {{formulaName}} {{version}}
             
