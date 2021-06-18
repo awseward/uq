@@ -56,7 +56,7 @@ jobs:
           path: "~/.nimble"
       - uses: "jiro4989/setup-nim-action@v1.2.3"
         with:
-          nim-version: '1.4.2'
+          nim-version: '1.4.6'
       - env:
           GIT_TAG: "${{ needs.j0-setup.outputs.git_tag }}"
           PLATFORM_NAME: "${{ runner.os }}"

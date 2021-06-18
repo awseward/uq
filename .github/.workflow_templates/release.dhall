@@ -16,5 +16,6 @@ in  GHA.Workflow::{
           Release.Opts::{
           , formula-name = "uq"
           , homebrew-tap = "awseward/homebrew-tap"
+          , nimVersion = "1.4.6"
           }
     }

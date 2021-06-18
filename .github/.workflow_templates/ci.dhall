@@ -12,12 +12,18 @@ let Checkout = imports.job-templates.actions/Checkout
 
 let nim/Build = imports.job-templates.nim/Build
 
+let nim/Setup = imports.job-templates.nim/Setup
+
 in  GHA.Workflow::{
     , name = "CI"
     , on = On.names [ "push" ]
     , jobs =
           [ nim/Build.mkJobEntry
-              nim/Build.Opts::{ platforms = [ OS.macos-latest ], bin = "uq" }
+              nim/Build.Opts::{
+              , bin = "uq"
+              , nimSetup = nim/Setup.Opts::{ nimVersion = "1.4.6" }
+              , platforms = [ OS.macos-latest ]
+              }
           ]
         # toMap
             { check-shell = GHA.Job::{
