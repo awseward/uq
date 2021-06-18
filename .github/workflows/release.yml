@@ -5,39 +5,9 @@
 # Please avoid editing it manually unless doing so temporarily.
 
 jobs:
-  j0-setup:
-    outputs:
-      git_tag: "${{ steps.plan.outputs.git_tag }}"
-      html_url: "${{ steps.create-release.outputs.html_url }}"
-      upload_url: "${{ steps.create-release.outputs.upload_url }}"
-    runs-on:
-      - ubuntu-latest
-    steps:
-      - uses: "actions/checkout@v2"
-      - id: plan
-        name: Plan release
-        run: |
-          #!/usr/bin/env bash
-          
-          set -euo pipefail
-          
-          export GIT_TAG="${GITHUB_REF/refs\/tags\//}"
-          echo "GITHUB_REF=${GITHUB_REF}"
-          echo "GIT_TAG=${GIT_TAG}" | tee -a "$GITHUB_ENV"
-          echo "::set-output name=git_tag::${GIT_TAG}"
-      - env:
-          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-        id: create-release
-        uses: "actions/create-release@v1"
-        with:
-          body: ''
-          draft: false
-          prerelease: false
-          release_name: "${{ steps.plan.outputs.git_tag }}"
-          tag_name: "${{ steps.plan.outputs.git_tag }}"
-  j1-artifacts:
+  artifacts:
     needs:
-      - j0-setup
+      - setup
     runs-on:
       - "${{ matrix.os }}"
     steps:
@@ -54,11 +24,11 @@ jobs:
         with:
           key: "${{ runner.os }}-nimble-${{ hashFiles('**/*.nimble') }}"
           path: "~/.nimble"
-      - uses: "jiro4989/setup-nim-action@v1.2.3"
+      - uses: "jiro4989/setup-nim-action@v1.3.4"
         with:
           nim-version: '1.4.8'
       - env:
-          GIT_TAG: "${{ needs.j0-setup.outputs.git_tag }}"
+          GIT_TAG: "${{ needs.setup.outputs.git_tag }}"
           PLATFORM_NAME: "${{ runner.os }}"
         id: tarball
         name: Create tarball
@@ -96,7 +66,7 @@ jobs:
           asset_content_type: application/gzip
           asset_name: "${{ steps.tarball.outputs.tarball_filename }}"
           asset_path: "${{ steps.tarball.outputs.tarball_filepath }}"
-          upload_url: "${{ needs.j0-setup.outputs.upload_url }}"
+          upload_url: "${{ needs.setup.outputs.upload_url }}"
       - env:
           COMMITTER_TOKEN: "${{ secrets.COMMITTER_TOKEN }}"
         if: "${{ runner.os == 'macOS' }}"
@@ -106,7 +76,7 @@ jobs:
           commit-message: |
             {{formulaName}} {{version}}
             
-            Sourced from ${{ needs.j0-setup.outputs.html_url }}.
+            Sourced from ${{ needs.setup.outputs.html_url }}.
           download-url: "${{ steps.upload-tarball.outputs.browser_download_url }}"
           formula-name: uq
           homebrew-tap: awseward/homebrew-tap
@@ -115,6 +85,36 @@ jobs:
         os:
           - macos-latest
           - ubuntu-latest
+  setup:
+    outputs:
+      git_tag: "${{ steps.plan.outputs.git_tag }}"
+      html_url: "${{ steps.create-release.outputs.html_url }}"
+      upload_url: "${{ steps.create-release.outputs.upload_url }}"
+    runs-on:
+      - ubuntu-latest
+    steps:
+      - uses: "actions/checkout@v2"
+      - id: plan
+        name: Plan release
+        run: |
+          #!/usr/bin/env bash
+          
+          set -euo pipefail
+          
+          export GIT_TAG="${GITHUB_REF/refs\/tags\//}"
+          echo "GITHUB_REF=${GITHUB_REF}"
+          echo "GIT_TAG=${GIT_TAG}" | tee -a "$GITHUB_ENV"
+          echo "::set-output name=git_tag::${GIT_TAG}"
+      - env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        id: create-release
+        uses: "actions/create-release@v1"
+        with:
+          body: ''
+          draft: false
+          prerelease: false
+          release_name: "${{ steps.plan.outputs.git_tag }}"
+          tag_name: "${{ steps.plan.outputs.git_tag }}"
 name: Release
 on:
   push:
