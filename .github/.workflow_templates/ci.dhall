@@ -1,5 +1,7 @@
 let imports = ../imports.dhall
 
+let config = ../config.dhall
+
 let GHA = imports.GHA
 
 let On = GHA.On
@@ -21,7 +23,7 @@ in  GHA.Workflow::{
           [ nim/Build.mkJobEntry
               nim/Build.Opts::{
               , bin = "uq"
-              , nimSetup = nim/Setup.Opts::{ nimVersion = "1.4.6" }
+              , nimSetup = nim/Setup.Opts::{ nimVersion = config.versions.nim }
               , platforms = [ OS.macos-latest ]
               }
           ]

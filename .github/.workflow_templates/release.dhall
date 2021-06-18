@@ -1,5 +1,7 @@
 let imports = ../imports.dhall
 
+let config = ../config.dhall
+
 let GHA = imports.GHA
 
 let On = GHA.On
@@ -13,9 +15,5 @@ in  GHA.Workflow::{
     , on = On.map [ On.push On.PushPull::{ tags = On.include [ "*" ] } ]
     , jobs =
         Release.mkJobs
-          Release.Opts::{
-          , formula-name = "uq"
-          , homebrew-tap = "awseward/homebrew-tap"
-          , nimVersion = "1.4.6"
-          }
+          Release.Opts::(config.homebrew ⫽ { nimVersion = config.versions.nim })
     }
