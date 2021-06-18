@@ -1,6 +1,6 @@
 let imports = ./imports.dhall
 
-let versions = { dhall = "1.39.0", nim = "1.4.6" }
+let versions = { dhall = "1.39.0", nim = "1.4.8" }
 
 in  { defaultBranch = "main"
     , homebrew = { formula-name = "uq", homebrew-tap = "awseward/homebrew-tap" }
