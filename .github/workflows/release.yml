@@ -24,7 +24,7 @@ jobs:
         with:
           key: "${{ runner.os }}-nimble-${{ hashFiles('**/*.nimble') }}"
           path: "~/.nimble"
-      - uses: "jiro4989/setup-nim-action@v1.3.4"
+      - uses: "jiro4989/setup-nim-action@v1.3"
         with:
           nim-version: '1.4.8'
       - env:
@@ -34,11 +34,11 @@ jobs:
         name: Create tarball
         run: |
           #!/usr/bin/env bash
-          
+
           set -euo pipefail
-          
+
           _build="${BUILD_RELEASE_TARBALL:-./_build_release_tarball.sh}"
-          
+
           TARBALL_FILENAME="$( "${_build}" "${GIT_TAG}" "$( tr '[:upper:]' '[:lower:]' <<< "${PLATFORM_NAME}" )" )"
           ls -lah
           export TARBALL_FILENAME
@@ -51,9 +51,9 @@ jobs:
         name: Record checksum
         run: |
           #!/usr/bin/env bash
-          
+
           set -euo pipefail
-          
+
           TARBALL_CHECKSUM="$(shasum -a 256 "${TARBALL_FILENAME}" | cut -d ' ' -f1)"
           export TARBALL_CHECKSUM
           echo "TARBALL_CHECKSUM=${TARBALL_CHECKSUM}" | tee -a "GITHUB_ENV"
@@ -75,7 +75,7 @@ jobs:
           base-branch: main
           commit-message: |
             {{formulaName}} {{version}}
-            
+
             Sourced from ${{ needs.setup.outputs.html_url }}.
           download-url: "${{ steps.upload-tarball.outputs.browser_download_url }}"
           formula-name: uq
@@ -98,9 +98,9 @@ jobs:
         name: Plan release
         run: |
           #!/usr/bin/env bash
-          
+
           set -euo pipefail
-          
+
           export GIT_TAG="${GITHUB_REF/refs\/tags\//}"
           echo "GITHUB_REF=${GITHUB_REF}"
           echo "GIT_TAG=${GIT_TAG}" | tee -a "$GITHUB_ENV"
